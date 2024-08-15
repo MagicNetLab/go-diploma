@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16.3-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gophermart
+      POSTGRES_PASSWORD: gophermart
+      POSTGRES_DB: gophermart
+      POSTGRES_PORT: 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
