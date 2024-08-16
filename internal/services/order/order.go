@@ -2,32 +2,40 @@ package order
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
 	"github.com/jackc/pgx/v5"
 )
 
 func CreateOrder(number int, userID int) error {
 	if !checkNumber(number) {
+		logger.Error("failed created order: invalid number")
 		return errors.New("invalid number")
 	}
 
 	order, err := store.GetOrderByNumber(number)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		logger.Error(fmt.Sprintf("failed created order: %v", err))
 		return err
 	}
 
 	if order != nil {
 		if order.UserID != userID {
+			logger.Error("failed created order: has already been added by the current user")
 			return ErrorOrderAlreadyAddedByOtherUser
 		}
+
+		logger.Error("failed created order: has already been added by the other user")
 		return ErrorOrderAlreadyAddedByUser
 	}
 
 	err = store.CreateOrder(number, userID)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed create order: %v", err))
 		return err
 	}
 
@@ -72,10 +80,12 @@ func GetBalanceByUserID(userID int) (UserBalance, error) {
 func CreateWithdraw(number string, amount float64, userID int) error {
 	orderNum, err := strconv.Atoi(number)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed create withdraw: %v", err))
 		return err
 	}
 
 	if !checkNumber(orderNum) {
+		logger.Error("failed create withdraw: invalid number")
 		return errors.New("invalid order number")
 	}
 
@@ -107,7 +117,6 @@ func GetWithdrawsByUserId(userID int) (WithdrawList, error) {
 	return list, nil
 }
 
-// todo refactoring luhn checker
 func checkNumber(number int) bool {
 	return (number%10+checksum(number/10))%10 == 0
 }
