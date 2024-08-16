@@ -20,11 +20,13 @@ func UserRegisterHandler() http.HandlerFunc {
 
 		var regRequest RegisterUserRequest
 		if err := json.NewDecoder(r.Body).Decode(&regRequest); err != nil {
+			logger.Error(fmt.Sprintf("error decoding register request body: %v", err))
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if regRequest.Login == "" || regRequest.Password == "" {
+		if !regRequest.IsValid() {
+			logger.Error(fmt.Sprintf("failed register user: one or more request params is empty"))
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -32,6 +34,7 @@ func UserRegisterHandler() http.HandlerFunc {
 		err := user.Register(regRequest.Login, regRequest.Password)
 		if err != nil {
 			if errors.As(err, &user.ErrorUserExists) {
+				logger.Error(fmt.Sprintf("failed register user: login %s is exists", regRequest.Login))
 				http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 				return
 			}
@@ -43,7 +46,7 @@ func UserRegisterHandler() http.HandlerFunc {
 
 		token, err := user.Login(regRequest.Login, regRequest.Password)
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail login: %v", err))
+			logger.Error(fmt.Sprintf("fail user login: %v", err))
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -55,7 +58,7 @@ func UserRegisterHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte("OK"))
 		if err != nil {
-			logger.Error(fmt.Sprintf("Failed to write response %v", err))
+			logger.Error(fmt.Sprintf("Failed to write register user response response %v", err))
 		}
 	}
 }
@@ -69,17 +72,20 @@ func UserLoginHandler() http.HandlerFunc {
 
 		var loginRequest UserLoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
+			logger.Error(fmt.Sprintf("error decoding login request body: %v", err))
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if loginRequest.Login == "" || loginRequest.Password == "" {
+		if !loginRequest.IsValid() {
+			logger.Error(fmt.Sprintf("failed login user: one or more request params is empty"))
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		token, err := user.Login(loginRequest.Login, loginRequest.Password)
 		if err != nil {
+			logger.Error(fmt.Sprintf("fail user login: %v", err))
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}

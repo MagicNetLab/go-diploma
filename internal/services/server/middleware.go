@@ -1,10 +1,11 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/MagicNetLab/go-diploma/internal/services/compression"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/user"
-	"net/http"
 )
 
 func mwDefault(h http.HandlerFunc) http.HandlerFunc {

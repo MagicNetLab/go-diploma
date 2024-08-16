@@ -8,23 +8,23 @@ var ErrorOrderAlreadyAddedByUser = errors.New("order already added by user")
 var ErrorOrderAlreadyAddedByOtherUser = errors.New("order already added by other user")
 
 type Order struct {
-	Number     int     `json:"number"`
-	Status     string  `json:"status"`
-	Accrual    float32 `json:"accrual"`
-	UploadedAt string  `json:"uploaded_at"`
+	Number     int
+	Status     string
+	Accrual    float32
+	UploadedAt string
 }
 
 type UserOrdersResponse []Order
 
 type UserBalance struct {
-	Current   float64 `json:"current"`
-	Withdrawn float64 `json:"withdrawn"`
+	Current   float64
+	Withdrawn float64
 }
 
 type Withdraw struct {
-	Order       string  `json:"order"`
-	Sum         float64 `json:"sum"`
-	ProcessedAt string  `json:"processed_at"`
+	Order       string
+	Sum         float64
+	ProcessedAt string
 }
 
 type WithdrawList []Withdraw
