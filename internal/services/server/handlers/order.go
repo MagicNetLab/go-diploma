@@ -190,6 +190,12 @@ func WithdrawRequestHandler() http.HandlerFunc {
 
 		err = order.CreateWithdraw(withdrawRequest.Order, withdrawRequest.Sum, userID)
 		if err != nil {
+			if errors.Is(err, order.ErrorIncorrectWithdrawNumber) {
+				logger.Error(fmt.Sprintf("Withdraw request error: %v", err))
+				http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+				return
+			}
+
 			logger.Error(fmt.Sprintf("error creating withdraw: %v", err))
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return

@@ -86,11 +86,14 @@ func CreateWithdraw(number string, amount float64, userID int) error {
 
 	if !checkNumber(orderNum) {
 		logger.Error("failed create withdraw: invalid number")
-		return errors.New("invalid order number")
+		return ErrorIncorrectWithdrawNumber
 	}
 
 	err = store.CreateWithdraw(orderNum, amount, userID)
 	if err != nil {
+		if errors.Is(err, store.ErrorWithdrawNotUnique) {
+			return ErrorIncorrectWithdrawNumber
+		}
 		return err
 	}
 

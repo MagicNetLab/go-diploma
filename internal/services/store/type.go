@@ -14,6 +14,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+var ErrorWithdrawNotUnique = errors.New("withdraw order number already exists")
+
 type Store struct {
 	connectString string
 }

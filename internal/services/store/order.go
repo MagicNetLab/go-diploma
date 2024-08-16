@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -27,6 +29,7 @@ func GetOrderByNumber(number int) (*Order, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to connect to database: %s", err))
 		return nil, err
 	}
 	defer conn.Close(ctx)
@@ -35,6 +38,7 @@ func GetOrderByNumber(number int) (*Order, error) {
 	row := conn.QueryRow(ctx, getOrderByNumberSQL, number)
 	err = row.Scan(&order.ID, &order.Number, &order.UserID, &order.Status, &order.Accrual, &order.UploadedAt)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to query order: %s", err))
 		return nil, err
 	}
 
@@ -47,16 +51,19 @@ func CreateOrder(number int, userID int) error {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to connect to database: %s", err))
 		return err
 	}
 	defer conn.Close(ctx)
 
 	res, err := conn.Exec(ctx, insertOrderSQL, number, userID, orderStatusNew)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to insert order: %s", err))
 		return err
 	}
 
 	if res.RowsAffected() == 0 {
+		logger.Error("failed to insert order")
 		return errors.New("failed to insert order")
 	}
 
@@ -69,6 +76,7 @@ func GetOrdersByUserID(userID int) ([]Order, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to connect to database: %s", err))
 		return nil, err
 	}
 	defer conn.Close(ctx)
@@ -79,7 +87,7 @@ func GetOrdersByUserID(userID int) ([]Order, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return orders, nil
 		}
-
+		logger.Error(fmt.Sprintf("failed to query orders: %s", err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -88,6 +96,7 @@ func GetOrdersByUserID(userID int) ([]Order, error) {
 		var order Order
 		err = rows.Scan(&order.ID, &order.UserID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
+			logger.Error(fmt.Sprintf("failed to scan query order: %s", err))
 			rows.Close()
 			return nil, err
 		}
@@ -104,6 +113,7 @@ func GetAccrualAmountByUserID(userID int) (float64, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to connect to database: %s", err))
 		return 0, err
 	}
 	defer conn.Close(ctx)
@@ -111,10 +121,12 @@ func GetAccrualAmountByUserID(userID int) (float64, error) {
 	var amount sql.NullFloat64
 	err = conn.QueryRow(ctx, accrualAmountByUserIdSQL, userID).Scan(&amount)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to query accrual amount: %s", err))
 		return 0, err
 	}
 
 	if !amount.Valid {
+		logger.Error("failed to query accrual amount: result is not valid")
 		return 0, nil
 	}
 
