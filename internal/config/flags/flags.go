@@ -9,6 +9,7 @@ func Parse() (Options, error) {
 	flag.StringVar(&opts.runAddress, runAddressKey, "", "Run application address")
 	flag.StringVar(&opts.dbUri, dbUriKey, "", "DB connection URI")
 	flag.StringVar(&opts.accrualSystemUrl, accrualSystemUrl, "", "Accrual system URL")
+	flag.StringVar(&opts.jwtSecret, jwtSecret, "", "JWT secret")
 	flag.Parse()
 
 	return opts, nil

@@ -4,12 +4,14 @@ const (
 	runAddressKey    = "a"
 	dbUriKey         = "d"
 	accrualSystemUrl = "r"
+	jwtSecret        = "s"
 )
 
 type Options struct {
 	runAddress       string
 	dbUri            string
 	accrualSystemUrl string
+	jwtSecret        string
 }
 
 func (o *Options) HasRunAddress() bool {
@@ -34,4 +36,12 @@ func (o *Options) HasAccrualSystemUrl() bool {
 
 func (o *Options) GetAccrualSystemUrl() string {
 	return o.accrualSystemUrl
+}
+
+func (o *Options) HasJWTSecret() bool {
+	return o.jwtSecret != ""
+}
+
+func (o *Options) GetJWTSecret() string {
+	return o.jwtSecret
 }

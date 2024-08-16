@@ -13,7 +13,7 @@ func Parse() (Options, error) {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		logger.Error(fmt.Sprintf(".env file not found: %s", err))
+		logger.Error(fmt.Sprintf("fail load .env file: %s", err))
 	}
 
 	runAddressValue := os.Getenv(runAddressKey)
@@ -29,6 +29,11 @@ func Parse() (Options, error) {
 	accrualSystemUrlValue := os.Getenv(accrualSystemUrlKey)
 	if accrualSystemUrlValue != "" {
 		opts.accrualSystemUrl = accrualSystemUrlValue
+	}
+
+	jwtSecret := os.Getenv(jwtSecret)
+	if jwtSecret != "" {
+		opts.jwtSecret = jwtSecret
 	}
 
 	return opts, nil

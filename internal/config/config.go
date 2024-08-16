@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -19,9 +21,18 @@ func GetAppConfig() (AppEnvironment, error) {
 	getEnvValues()
 	getFlagsValues()
 
+	if Env.GetJWTSecret() == "" {
+		err := Env.SetJWTSecret(getRandomSecret())
+		if err != nil {
+			logger.Error(fmt.Sprintf("Failed to set JWT secret: %v", err))
+		}
+	}
+
 	if Env.isValid() {
 		return &Env, nil
 	}
+
+	logger.Error(fmt.Sprintf("Failed buld correct app evironment: %v", Env))
 
 	return &Environment{}, errors.New("invalid config")
 }
@@ -53,6 +64,13 @@ func getEnvValues() {
 			logger.Error(fmt.Sprintf("fail set AccrualSystemUrl from env params: %v", err))
 		}
 	}
+
+	if envValues.HasJWTSecret() {
+		err = Env.SetJWTSecret(envValues.GetJWTSecret())
+		if err != nil {
+			logger.Error(fmt.Sprintf("fail set JWTSecret from env params: %v", err))
+		}
+	}
 }
 
 func getFlagsValues() {
@@ -81,4 +99,21 @@ func getFlagsValues() {
 			logger.Error(fmt.Sprintf("fail set AccrualSystemUrl from flag params: %v", err))
 		}
 	}
+
+	if flagValues.HasJWTSecret() {
+		err = Env.SetJWTSecret(flagValues.GetJWTSecret())
+		if err != nil {
+			logger.Error(fmt.Sprintf("fail set JWTSecret from flag params: %v", err))
+		}
+	}
+}
+
+func getRandomSecret() string {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+
+	return hex.EncodeToString(b)
 }
