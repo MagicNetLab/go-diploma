@@ -13,7 +13,7 @@ func Parse() (Options, error) {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		logger.Error(fmt.Sprintf(".env file not found: %s", err), make(map[string]interface{}))
+		logger.Error(fmt.Sprintf(".env file not found: %s", err))
 	}
 
 	runAddressValue := os.Getenv(runAddressKey)

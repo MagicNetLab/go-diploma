@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/MagicNetLab/go-diploma/internal/services/logger"
-	"github.com/MagicNetLab/go-diploma/internal/services/order"
-	"github.com/MagicNetLab/go-diploma/internal/services/user"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/MagicNetLab/go-diploma/internal/services/logger"
+	"github.com/MagicNetLab/go-diploma/internal/services/order"
+	"github.com/MagicNetLab/go-diploma/internal/services/user"
 )
 
 func CreateOrderHandler() http.HandlerFunc {
@@ -133,13 +134,13 @@ func WithdrawRequestHandler() http.HandlerFunc {
 
 		var withdrawRequest WithDrawRequest
 		if err := json.NewDecoder(r.Body).Decode(&withdrawRequest); err != nil {
-			logger.Error(fmt.Sprintf("failed to decode withdraw request: %v", err), make(map[string]interface{}))
+			logger.Error(fmt.Sprintf("failed to decode withdraw request: %v", err))
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if !withdrawRequest.IsValid() {
-			logger.Error(fmt.Sprintf("Withdraw request: invalid request params: %v", err), make(map[string]interface{}))
+			logger.Error(fmt.Sprintf("Withdraw request: invalid request params: %v", err))
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}

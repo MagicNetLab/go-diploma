@@ -14,7 +14,7 @@ var store Store
 func Init(env config.AppEnvironment) error {
 	err := store.SetConnectString(env.GetDBUri())
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail set db conect param: %s", err), make(map[string]interface{}))
+		logger.Error(fmt.Sprintf("fail set db conect param: %s", err))
 		return err
 	}
 
@@ -23,13 +23,13 @@ func Init(env config.AppEnvironment) error {
 
 	err = store.Ping(ctx)
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail ping db conect param: %v", err), make(map[string]interface{}))
+		logger.Error(fmt.Sprintf("fail ping db conect param: %v", err))
 		return err
 	}
 
 	err = store.Migrate()
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail migrate db conect param: %s", err), make(map[string]interface{}))
+		logger.Error(fmt.Sprintf("fail migrate db conect param: %s", err))
 		return err
 	}
 

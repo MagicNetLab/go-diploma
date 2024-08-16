@@ -5,22 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/golang-migrate/migrate/v4"
 	pgsql "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5"
-	"time"
 )
-
-//const (
-//	dbUser     = "DB_USER"
-//	dbPassword = "DB_PASSWORD"
-//	dbHost     = "DB_HOST"
-//	dbPort     = "DB_PORT"
-//	dbName     = "DB_NAME"
-//	dbSslMode  = "DB_SSL_MODE"
-//)
 
 type Store struct {
 	connectString string
@@ -77,7 +69,7 @@ func (s *Store) Migrate() error {
 		driver,
 	)
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail init db migrate: %v", err), make(map[string]interface{}))
+		logger.Error(fmt.Sprintf("fail init db migrate: %v", err))
 		return err
 	}
 

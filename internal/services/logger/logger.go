@@ -3,36 +3,48 @@ package logger
 import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 )
 
 var log = Logger{log: zap.NewNop()}
 
 func Initialize() error {
-	cnf := zap.NewProductionEncoderConfig()
-	cnf.EncodeTime = zapcore.ISO8601TimeEncoder
-	cnf.TimeKey = "timestamp"
-
-	zl, err := zap.NewProduction()
-	if err != nil {
-		return err
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:        "timestamp",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		MessageKey:     "message",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
+		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
-	log = Logger{log: zl}
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig), // Using JSON encoder
+		zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout)),
+		zap.InfoLevel,
+	)
+
+	logger := zap.New(core)
+	log = Logger{log: logger}
 
 	return nil
 }
 
-func Info(msg string, args map[string]interface{}) {
-	log.Info(msg, args)
+func Info(msg string, args ...zap.Field) {
+	log.Info(msg, args...)
 }
-func Error(msg string, args map[string]interface{}) {
-	log.Error(msg, args)
+
+func Error(msg string, args ...zap.Field) {
+	log.Error(msg, args...)
 }
-func Debug(msg string, args map[string]interface{}) {
-	log.Debug(msg, args)
-}
-func Fatal(msg string, args map[string]interface{}) {
-	log.Fatal(msg, args)
+
+func Fatal(msg string, args ...zap.Field) {
+	log.Fatal(msg, args...)
 }
 
 func Sync() {

@@ -36,14 +36,14 @@ func UserRegisterHandler() http.HandlerFunc {
 				return
 			}
 
-			logger.Error(fmt.Sprintf("fail register user: %v", err), make(map[string]interface{}))
+			logger.Error(fmt.Sprintf("fail register user: %v", err))
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		token, err := user.Login(regRequest.Login, regRequest.Password)
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail login: %v", err), make(map[string]interface{}))
+			logger.Error(fmt.Sprintf("fail login: %v", err))
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -55,7 +55,7 @@ func UserRegisterHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte("OK"))
 		if err != nil {
-			logger.Error(fmt.Sprintf("Failed to write response %v", err), make(map[string]interface{}))
+			logger.Error(fmt.Sprintf("Failed to write response %v", err))
 		}
 	}
 }
@@ -91,7 +91,7 @@ func UserLoginHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte("OK"))
 		if err != nil {
-			logger.Error(fmt.Sprintf("Failed to write response %v", err), make(map[string]interface{}))
+			logger.Error(fmt.Sprintf("Failed to write response %v", err))
 		}
 
 	}

@@ -13,7 +13,6 @@ func getRoute() *chi.Mux {
 	r.Get("/api/user/orders", mwAuthorized(handlers.OrderListHandler()))
 	r.Get("/api/user/balance", mwAuthorized(handlers.BalanceHandler()))
 	r.Post("/api/user/balance/withdraw", mwAuthorized(handlers.WithdrawRequestHandler()))
-
 	r.Get("/api/user/withdrawals", mwAuthorized(handlers.WithdrawListHandler()))
 
 	return r

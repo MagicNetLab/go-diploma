@@ -52,7 +52,7 @@ func CreateWithdraw(order int, amount float64, userID int) error {
 
 	result, err := conn.Exec(ctx, createWithdrawSQL, order, amount, userID)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed insert new withdraw: %v", err), make(map[string]interface{}))
+		logger.Error(fmt.Sprintf("failed insert new withdraw: %v", err))
 		// todo unique error handle
 		return err
 	}

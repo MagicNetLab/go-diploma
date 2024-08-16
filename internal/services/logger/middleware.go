@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
@@ -22,11 +23,12 @@ func Middleware(h http.HandlerFunc) http.HandlerFunc {
 
 		duration := time.Since(start)
 
-		log.Info("request info", map[string]interface{}{
-			"uri":      r.RequestURI,
-			"method":   r.Method,
-			"status":   responseData.Status,
-			"duration": duration,
-			"size":     responseData.Size})
+		log.Info("request info",
+			zap.String("uri", r.RequestURI),
+			zap.String("method", r.Method),
+			zap.Int("status", responseData.Status),
+			zap.Duration("duration", duration),
+			zap.Int("size", responseData.Size),
+		)
 	}
 }

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
+	"go.uber.org/zap"
 	"log"
 
 	"github.com/MagicNetLab/go-diploma/internal/config"
@@ -19,15 +19,22 @@ func main() {
 
 	cnf, err := config.GetAppConfig()
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("Error loading config: %v", err), make(map[string]interface{}))
+		logger.Fatal("fail loading config", zap.String("error", err.Error()))
 		return
 	}
 
 	err = store.Init(cnf)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("Error initializing store: %v", err), make(map[string]interface{}))
+		logger.Fatal("failed initializing store", zap.String("error", err.Error()))
 		return
 	}
 
-	server.Run(cnf)
+	// run server
+	go func() {
+		server.Run(cnf)
+	}()
+
+	// run workers
+
+	select {}
 }
