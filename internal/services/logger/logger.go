@@ -1,9 +1,10 @@
 package logger
 
 import (
+	"os"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 )
 
 var log = Logger{log: zap.NewNop()}
@@ -24,7 +25,7 @@ func Initialize() error {
 	}
 
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig), // Using JSON encoder
+		zapcore.NewJSONEncoder(encoderConfig),
 		zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout)),
 		zap.InfoLevel,
 	)
