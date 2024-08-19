@@ -106,7 +106,14 @@ func OrderListHandler() http.HandlerFunc {
 
 		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(response); err != nil {
+
+		if len(response) == 0 {
+			_, err = w.Write([]byte("[]"))
+		} else {
+			err = json.NewEncoder(w).Encode(response)
+		}
+
+		if err != nil {
 			logger.Error(fmt.Sprintf("error send user orders response: %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

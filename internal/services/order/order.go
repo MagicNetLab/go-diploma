@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MagicNetLab/go-diploma/internal/services/accrual"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
 	"github.com/jackc/pgx/v5"
@@ -23,7 +24,7 @@ func CreateOrder(number int, userID int) error {
 		return err
 	}
 
-	if order != nil {
+	if order.UserID != 0 {
 		if order.UserID != userID {
 			logger.Error("failed created order: has already been added by the current user")
 			return ErrorOrderAlreadyAddedByOtherUser
@@ -38,6 +39,8 @@ func CreateOrder(number int, userID int) error {
 		logger.Error(fmt.Sprintf("failed create order: %v", err))
 		return err
 	}
+
+	go accrual.CheckAccrualAmount(number)
 
 	return nil
 }
