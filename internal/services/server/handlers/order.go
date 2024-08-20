@@ -110,6 +110,7 @@ func OrderListHandler() http.HandlerFunc {
 			response = append(response, o)
 		}
 
+		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if len(response) == 0 {
 			_, err = w.Write([]byte("[]"))
