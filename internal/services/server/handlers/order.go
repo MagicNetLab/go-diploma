@@ -82,14 +82,20 @@ func OrderListHandler() http.HandlerFunc {
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
 			logger.Error("error getting auth user id from cookie", zap.Error(err))
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			w.Header().Set("content-type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(http.StatusText(http.StatusUnauthorized)))
+
 			return
 		}
 
 		userOrders, err := order.GetUserOrders(userID)
 		if err != nil {
 			logger.Error("error getting user orders", zap.Error(err))
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			w.Header().Set("content-type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+
 			return
 		}
 
@@ -104,9 +110,7 @@ func OrderListHandler() http.HandlerFunc {
 			response = append(response, o)
 		}
 
-		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
-
 		if len(response) == 0 {
 			_, err = w.Write([]byte("[]"))
 		} else {
@@ -115,7 +119,9 @@ func OrderListHandler() http.HandlerFunc {
 
 		if err != nil {
 			logger.Error("error send user orders response", zap.Error(err))
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			w.Header().Set("content-type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 		}
 	}
 }
