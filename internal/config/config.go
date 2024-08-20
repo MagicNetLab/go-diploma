@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"log"
 
 	"github.com/MagicNetLab/go-diploma/internal/config/env"
 	"github.com/MagicNetLab/go-diploma/internal/config/flags"
@@ -29,10 +30,9 @@ func GetAppConfig() (AppEnvironment, error) {
 	}
 
 	if Env.isValid() {
+		log.Println(Env)
 		return &Env, nil
 	}
-
-	logger.Error("Failed buld correct app environment", zap.Any("env", Env))
 
 	return &Environment{}, errors.New("invalid config")
 }

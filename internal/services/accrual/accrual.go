@@ -17,6 +17,7 @@ func CheckAccrualAmount(order int) {
 }
 
 func checkOrder(orderNum string) error {
+	logger.Info("Checking order in accrual system", zap.String("num", orderNum)) //
 	num, err := strconv.Atoi(orderNum)
 	if err != nil {
 		return err
@@ -24,14 +25,22 @@ func checkOrder(orderNum string) error {
 
 	order, err := store.GetOrderByNumber(num)
 	if err != nil {
+		logger.Error("Failed to get order by number", zap.Error(err), zap.String("orderNum", orderNum))
 		return err
 	}
 
 	req := httpc.R()
 	resp, err := req.Get(fmt.Sprintf(accrualServicePath, orderNum))
 	if err != nil {
+		logger.Error("Failed to get order by number: request error", zap.Error(err), zap.String("orderNum", orderNum))
 		return err
 	}
+	logger.Info(
+		"accrual request result",
+		zap.String("orderNum", orderNum),
+		zap.String("status", resp.Status()),
+		zap.String("response", resp.String()),
+	)
 
 	if resp.StatusCode() == http.StatusNoContent {
 		order.Status = "INVALID"
@@ -46,6 +55,8 @@ func checkOrder(orderNum string) error {
 
 			return err
 		}
+
+		return errors.New("order not found in accrual system")
 	}
 
 	if resp.StatusCode() == http.StatusTooManyRequests {
