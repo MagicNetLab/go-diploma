@@ -2,7 +2,6 @@ package order
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 func CreateOrder(number int, userID int) error {
@@ -20,23 +20,23 @@ func CreateOrder(number int, userID int) error {
 
 	order, err := store.GetOrderByNumber(number)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		logger.Error(fmt.Sprintf("failed created order: %v", err))
+		logger.Error("failed created order: failed to verify number", zap.Error(err))
 		return err
 	}
 
 	if order.UserID != 0 {
 		if order.UserID != userID {
-			logger.Error("failed created order: has already been added by the current user")
+			logger.Error("failed created order: has already been added by the other user")
 			return ErrorOrderAlreadyAddedByOtherUser
 		}
 
-		logger.Error("failed created order: has already been added by the other user")
+		logger.Error("failed created order: has already been added by the current user")
 		return ErrorOrderAlreadyAddedByUser
 	}
 
 	err = store.CreateOrder(number, userID)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed create order: %v", err))
+		logger.Error("failed create order", zap.Error(err))
 		return err
 	}
 
@@ -83,7 +83,12 @@ func GetBalanceByUserID(userID int) (UserBalance, error) {
 func CreateWithdraw(number string, amount float64, userID int) error {
 	orderNum, err := strconv.Atoi(number)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed create withdraw: %v", err))
+		logger.Error(
+			"failed create withdraw",
+			zap.Error(err),
+			zap.String("number", number),
+			zap.Int("user_id", userID))
+
 		return err
 	}
 
@@ -95,18 +100,21 @@ func CreateWithdraw(number string, amount float64, userID int) error {
 	err = store.CreateWithdraw(orderNum, amount, userID)
 	if err != nil {
 		if errors.Is(err, store.ErrorWithdrawNotUnique) {
+			logger.Error("failed create withdraw", zap.Error(err))
 			return ErrorIncorrectWithdrawNumber
 		}
+
+		logger.Error("failed create withdraw", zap.Error(err))
 		return err
 	}
 
 	return nil
 }
 
-func GetWithdrawsByUserId(userID int) (WithdrawList, error) {
+func GetWithdrawsByUserID(userID int) (WithdrawList, error) {
 	var list WithdrawList
 
-	dbResult, err := store.GetWithdrawListByUserId(userID)
+	dbResult, err := store.GetWithdrawListByUserID(userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return list, nil

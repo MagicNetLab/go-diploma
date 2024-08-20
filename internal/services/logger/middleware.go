@@ -15,6 +15,7 @@ func Middleware(h http.HandlerFunc) http.HandlerFunc {
 			Status: 0,
 			Size:   0,
 		}
+
 		lw := loggingResponseWriter{
 			ResponseWriter: w,
 			responseData:   responseData,

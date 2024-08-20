@@ -2,15 +2,15 @@ package flags
 
 const (
 	runAddressKey    = "a"
-	dbUriKey         = "d"
-	accrualSystemUrl = "r"
+	dbURIKey         = "d"
+	accrualSystemURL = "r"
 	jwtSecret        = "s"
 )
 
 type Options struct {
 	runAddress       string
-	dbUri            string
-	accrualSystemUrl string
+	dbURI            string
+	accrualSystemURL string
 	jwtSecret        string
 }
 
@@ -23,19 +23,19 @@ func (o *Options) GetRunAddress() string {
 }
 
 func (o *Options) HasDBUri() bool {
-	return o.dbUri != ""
+	return o.dbURI != ""
 }
 
 func (o *Options) GetDBUri() string {
-	return o.dbUri
+	return o.dbURI
 }
 
-func (o *Options) HasAccrualSystemUrl() bool {
-	return o.accrualSystemUrl != ""
+func (o *Options) HasAccrualSystemURL() bool {
+	return o.accrualSystemURL != ""
 }
 
-func (o *Options) GetAccrualSystemUrl() string {
-	return o.accrualSystemUrl
+func (o *Options) GetAccrualSystemURL() string {
+	return o.accrualSystemURL
 }
 
 func (o *Options) HasJWTSecret() bool {

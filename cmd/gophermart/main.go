@@ -1,7 +1,6 @@
 package main
 
 import (
-	"go.uber.org/zap"
 	"log"
 
 	"github.com/MagicNetLab/go-diploma/internal/config"
@@ -9,6 +8,7 @@ import (
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/server"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -30,12 +30,13 @@ func main() {
 		return
 	}
 
+	// run accrual worker
+	accrual.RunWorker()
+
 	// run server
 	go func() {
 		server.Run(cnf)
 	}()
-
-	accrual.RunWorker()
 
 	select {}
 }

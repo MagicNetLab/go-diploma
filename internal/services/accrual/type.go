@@ -3,7 +3,7 @@ package accrual
 import "github.com/go-resty/resty/v2"
 
 const (
-	queueSize          = 10
+	queueSize          = 3
 	accrualServicePath = "/api/orders/%s"
 )
 
@@ -16,6 +16,5 @@ type AccrualResponse struct {
 var orderCh chan string
 var pauseCh chan string
 var serviceHost string
-var doneCh chan struct{}
 
 var httpc *resty.Client

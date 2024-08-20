@@ -1,7 +1,7 @@
 package env
 
 import (
-	"fmt"
+	"go.uber.org/zap"
 	"os"
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
@@ -13,7 +13,7 @@ func Parse() (Options, error) {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail load .env file: %s", err))
+		logger.Error("fail load .env file", zap.String("error", err.Error()))
 	}
 
 	runAddressValue := os.Getenv(runAddressKey)
@@ -21,14 +21,14 @@ func Parse() (Options, error) {
 		opts.runAddress = runAddressValue
 	}
 
-	dbIriValue := os.Getenv(dbUriKey)
+	dbIriValue := os.Getenv(dbURIKey)
 	if dbIriValue != "" {
-		opts.dbUri = dbIriValue
+		opts.dbURI = dbIriValue
 	}
 
-	accrualSystemUrlValue := os.Getenv(accrualSystemUrlKey)
-	if accrualSystemUrlValue != "" {
-		opts.accrualSystemUrl = accrualSystemUrlValue
+	accrualSystemURLValue := os.Getenv(accrualSystemURLKey)
+	if accrualSystemURLValue != "" {
+		opts.accrualSystemURL = accrualSystemURLValue
 	}
 
 	jwtSecret := os.Getenv(jwtSecret)

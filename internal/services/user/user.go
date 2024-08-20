@@ -2,11 +2,12 @@ package user
 
 import (
 	"fmt"
-	"github.com/MagicNetLab/go-diploma/internal/services/logger"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 
 	"github.com/MagicNetLab/go-diploma/internal/config"
+	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -20,24 +21,24 @@ type Claims struct {
 func Register(login string, password string) error {
 	isLoginExists, err := store.HasUserByLogin(login)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed check register user login: %v", err))
+		logger.Error("failed check register user login", zap.Error(err))
 		return err
 	}
 
 	if isLoginExists {
-		logger.Info(fmt.Sprintf("failed register user: login %v already exists", login))
+		logger.Info("failed register user: login already exists", zap.String("login", login))
 		return ErrorUserExists
 	}
 
 	hashPass, err := encodePassword(password)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed encode user password: %v", err))
+		logger.Error("failed encode user password", zap.Error(err))
 		return err
 	}
 
 	err = store.CreateUser(login, hashPass)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed register user: %v", err))
+		logger.Error("failed register user", zap.Error(err))
 		return err
 	}
 
@@ -47,19 +48,19 @@ func Register(login string, password string) error {
 func Login(login string, password string) (string, error) {
 	u, err := store.GetUserByLogin(login)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed get user by login to auth: %v", err))
+		logger.Error("failed get user by login to auth", zap.Error(err))
 		return "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed user login: compare password is fail. %v", err))
+		logger.Error("failed user login: compare password is fail", zap.Error(err))
 		return "", err
 	}
 
 	token, err := generateToken(u.ID)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed generate token: %v", err))
+		logger.Error("failed generate token", zap.Error(err))
 		return "", err
 	}
 
@@ -74,7 +75,7 @@ func CheckAuthorize(r *http.Request) bool {
 
 	appConfig, err := config.GetAppConfig()
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed get app config: %v", err))
+		logger.Error("failed get app config", zap.Error(err))
 		return false
 	}
 
@@ -88,7 +89,7 @@ func CheckAuthorize(r *http.Request) bool {
 			return []byte(appConfig.GetJWTSecret()), nil
 		})
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed parse token: %v", err))
+		logger.Error("failed parse token", zap.Error(err))
 		return false
 	}
 
@@ -107,7 +108,7 @@ func GetAuthUserID(r *http.Request) (int, error) {
 
 	appConfig, err := config.GetAppConfig()
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed get app config: %v", err))
+		logger.Error("failed get app config", zap.Error(err))
 		return 0, err
 	}
 
@@ -121,7 +122,7 @@ func GetAuthUserID(r *http.Request) (int, error) {
 			return []byte(appConfig.GetJWTSecret()), nil
 		})
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed parse token: %v", err))
+		logger.Error("failed parse token", zap.Error(err))
 		return 0, err
 	}
 
@@ -135,7 +136,7 @@ func GetAuthUserID(r *http.Request) (int, error) {
 func encodePassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed encode user password: %v", err))
+		logger.Error("failed encode user password", zap.Error(err))
 		return "", err
 	}
 
@@ -145,7 +146,7 @@ func encodePassword(password string) (string, error) {
 func generateToken(userID int) (string, error) {
 	cnf, err := config.GetAppConfig()
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed get app config: %v", err))
+		logger.Error("failed get app config", zap.Error(err))
 		return "", err
 	}
 
@@ -158,7 +159,7 @@ func generateToken(userID int) (string, error) {
 
 	tokenString, err := token.SignedString([]byte(cnf.GetJWTSecret()))
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed generate token: %v", err))
+		logger.Error("failed generate token", zap.Error(err))
 		return "", err
 	}
 

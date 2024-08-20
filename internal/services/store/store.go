@@ -2,11 +2,11 @@ package store
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/MagicNetLab/go-diploma/internal/config"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
+	"go.uber.org/zap"
 )
 
 var store Store
@@ -14,7 +14,7 @@ var store Store
 func Init(env config.AppEnvironment) error {
 	err := store.SetConnectString(env.GetDBUri())
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail set db conect param: %s", err))
+		logger.Error("fail set db connect param", zap.Error(err))
 		return err
 	}
 
@@ -23,13 +23,13 @@ func Init(env config.AppEnvironment) error {
 
 	err = store.Ping(ctx)
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail ping db conect param: %v", err))
+		logger.Error("fail ping db connect param", zap.Error(err))
 		return err
 	}
 
 	err = store.Migrate()
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail migrate db conect param: %s", err))
+		logger.Error("fail migrate", zap.Error(err))
 		return err
 	}
 

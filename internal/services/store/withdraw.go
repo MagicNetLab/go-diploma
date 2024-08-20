@@ -4,19 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
-	"github.com/jackc/pgerrcode"
+	"go.uber.org/zap"
 	"strings"
 	"time"
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
 const (
-	withdrawAmountByUserIdSQL = "SELECT sum(sum) FROM withdraw WHERE user_id = $1"
+	withdrawAmountByUserIDSQL = "SELECT sum(sum) FROM withdraw WHERE user_id = $1"
 	createWithdrawSQL         = "INSERT INTO withdraw (order_num, sum, user_id) VALUES ($1, $2, $3)"
-	withdrawListByUserIdSQL   = "SELECT order_num, sum, processed_at FROM withdraw WHERE user_id = $1 ORDER BY processed_at"
+	withdrawListByUserIDSQL   = "SELECT order_num, sum, processed_at FROM withdraw WHERE user_id = $1 ORDER BY processed_at"
 )
 
 func GetWithdrawAmountByUserID(userID int) (float64, error) {
@@ -25,20 +25,20 @@ func GetWithdrawAmountByUserID(userID int) (float64, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error connecting to database: %v", err))
+		logger.Error("error connecting to database", zap.Error(err))
 		return 0, err
 	}
 	defer conn.Close(ctx)
 
 	var amount sql.NullFloat64
-	err = conn.QueryRow(ctx, withdrawAmountByUserIdSQL, userID).Scan(&amount)
+	err = conn.QueryRow(ctx, withdrawAmountByUserIDSQL, userID).Scan(&amount)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error execute query getting withdraw amount: %v", err))
+		logger.Error("error execute query getting withdraw amount", zap.Error(err))
 		return 0, err
 	}
 
 	if !amount.Valid {
-		logger.Error(fmt.Sprintf("error execute query getting withdraw amount: %v", err))
+		logger.Error("error execute query getting withdraw amount", zap.Error(err))
 		return 0, nil
 	}
 
@@ -51,7 +51,7 @@ func CreateWithdraw(order int, amount float64, userID int) error {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error connecting to database: %v", err))
+		logger.Error("error connecting to database", zap.Error(err))
 		return err
 	}
 	defer conn.Close(ctx)
@@ -59,23 +59,23 @@ func CreateWithdraw(order int, amount float64, userID int) error {
 	result, err := conn.Exec(ctx, createWithdrawSQL, order, amount, userID)
 	if err != nil {
 		if strings.Contains(err.Error(), pgerrcode.UniqueViolation) {
-			logger.Error(fmt.Sprintf("error creating withdraw: number %v already exists", order))
+			logger.Error("error creating withdraw: number already exists", zap.Int("number", order))
 			return ErrorWithdrawNotUnique
 		}
 
-		logger.Error(fmt.Sprintf("failed insert new withdraw: %v", err))
+		logger.Error("failed insert new withdraw", zap.Error(err))
 		return err
 	}
 
 	if result.RowsAffected() == 0 {
-		logger.Error(fmt.Sprintf("error creating withdraw: %v", err))
+		logger.Error("error creating withdraw", zap.Int("number", order))
 		return errors.New("failed to insert withdraw")
 	}
 
 	return nil
 }
 
-func GetWithdrawListByUserId(userID int) (WithdrawList, error) {
+func GetWithdrawListByUserID(userID int) (WithdrawList, error) {
 	var list WithdrawList
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -83,14 +83,14 @@ func GetWithdrawListByUserId(userID int) (WithdrawList, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error connecting to database: %v", err))
+		logger.Error("error connecting to database", zap.Error(err))
 		return list, err
 	}
 	defer conn.Close(ctx)
 
-	rows, err := conn.Query(ctx, withdrawListByUserIdSQL, userID)
+	rows, err := conn.Query(ctx, withdrawListByUserIDSQL, userID)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error execute query getting withdraw list: %v", err))
+		logger.Error("error execute query getting withdraw list", zap.Error(err))
 		return list, err
 	}
 	defer rows.Close()

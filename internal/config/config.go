@@ -4,11 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"fmt"
 
 	"github.com/MagicNetLab/go-diploma/internal/config/env"
 	"github.com/MagicNetLab/go-diploma/internal/config/flags"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
+	"go.uber.org/zap"
 )
 
 var Env Environment
@@ -24,7 +24,7 @@ func GetAppConfig() (AppEnvironment, error) {
 	if Env.GetJWTSecret() == "" {
 		err := Env.SetJWTSecret(getRandomSecret())
 		if err != nil {
-			logger.Error(fmt.Sprintf("Failed to set JWT secret: %v", err))
+			logger.Error("Failed to set JWT secret", zap.String("error", err.Error()))
 		}
 	}
 
@@ -32,7 +32,7 @@ func GetAppConfig() (AppEnvironment, error) {
 		return &Env, nil
 	}
 
-	logger.Error(fmt.Sprintf("Failed buld correct app evironment: %v", Env))
+	logger.Error("Failed buld correct app environment", zap.Any("env", Env))
 
 	return &Environment{}, errors.New("invalid config")
 }
@@ -40,35 +40,35 @@ func GetAppConfig() (AppEnvironment, error) {
 func getEnvValues() {
 	envValues, err := env.Parse()
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail parse env params: %v", err))
+		logger.Error("fail parse env params", zap.Error(err))
 		return
 	}
 
 	if envValues.HasRunAddress() {
 		err = Env.SetRunAddress(envValues.GetRunAddress())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set RunAddress from env params: %v", err))
+			logger.Error("fail set RunAddress from env params", zap.Error(err))
 		}
 	}
 
 	if envValues.HasDBUri() {
 		err = Env.SetDBUri(envValues.GetDBUri())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set DBUri from env params: %v", err))
+			logger.Error("fail set DBUri from env params", zap.Error(err))
 		}
 	}
 
-	if envValues.HasAccrualSystemUrl() {
-		err = Env.SetAccrualSystemUrl(envValues.GetAccrualSystemUrl())
+	if envValues.HasAccrualSystemURL() {
+		err = Env.SetAccrualSystemURL(envValues.GetAccrualSystemURL())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set AccrualSystemUrl from env params: %v", err))
+			logger.Error("fail set AccrualSystemUrl from env params", zap.Error(err))
 		}
 	}
 
 	if envValues.HasJWTSecret() {
 		err = Env.SetJWTSecret(envValues.GetJWTSecret())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set JWTSecret from env params: %v", err))
+			logger.Error("fail set JWTSecret from env params: %v", zap.Error(err))
 		}
 	}
 }
@@ -76,34 +76,34 @@ func getEnvValues() {
 func getFlagsValues() {
 	flagValues, err := flags.Parse()
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail parse flag params: %v", err))
+		logger.Error("fail parse flag params", zap.Error(err))
 	}
 
 	if flagValues.HasRunAddress() {
 		err = Env.SetRunAddress(flagValues.GetRunAddress())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set RunAddress from flag params: %v", err))
+			logger.Error("fail set RunAddress from flag params: %v", zap.Error(err))
 		}
 	}
 
 	if flagValues.HasDBUri() {
 		err = Env.SetDBUri(flagValues.GetDBUri())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set DBUri from flag params: %v", err))
+			logger.Error("fail set DBUri from flag params", zap.Error(err))
 		}
 	}
 
-	if flagValues.HasAccrualSystemUrl() {
-		err = Env.SetAccrualSystemUrl(flagValues.GetAccrualSystemUrl())
+	if flagValues.HasAccrualSystemURL() {
+		err = Env.SetAccrualSystemURL(flagValues.GetAccrualSystemURL())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set AccrualSystemUrl from flag params: %v", err))
+			logger.Error("fail set AccrualSystemUrl from flag params", zap.Error(err))
 		}
 	}
 
 	if flagValues.HasJWTSecret() {
 		err = Env.SetJWTSecret(flagValues.GetJWTSecret())
 		if err != nil {
-			logger.Error(fmt.Sprintf("fail set JWTSecret from flag params: %v", err))
+			logger.Error("fail set JWTSecret from flag params", zap.Error(err))
 		}
 	}
 }

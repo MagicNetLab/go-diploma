@@ -36,7 +36,7 @@ type Order struct {
 }
 
 type Withdraw struct {
-	Id          int       `db:"id"`
+	ID          int       `db:"id"`
 	UserID      int       `db:"user_id"`
 	OrderNum    int       `db:"order_num"`
 	Sum         float64   `db:"sum"`

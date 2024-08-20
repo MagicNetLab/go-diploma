@@ -8,21 +8,21 @@ type AppEnvironment interface {
 	GetRunAddress() string
 	SetDBUri(uri string) error
 	GetDBUri() string
-	SetAccrualSystemUrl(url string) error
-	GetAccrualSystemUrl() string
+	SetAccrualSystemURL(url string) error
+	GetAccrualSystemURL() string
 	SetJWTSecret(secret string) error
 	GetJWTSecret() string
 }
 
 type Environment struct {
 	runAddress       string
-	dbUri            string
-	accrualSystemUri string
+	dbURI            string
+	accrualSystemURI string
 	jwtSecret        string
 }
 
 func (e *Environment) isValid() bool {
-	return e.runAddress != "" && e.dbUri != "" && e.accrualSystemUri != ""
+	return e.runAddress != "" && e.dbURI != "" && e.accrualSystemURI != ""
 }
 
 func (e *Environment) SetRunAddress(addr string) error {
@@ -43,24 +43,24 @@ func (e *Environment) SetDBUri(uri string) error {
 		return errors.New("fail set DBUri: value is empty")
 	}
 
-	e.dbUri = uri
+	e.dbURI = uri
 	return nil
 }
 
 func (e *Environment) GetDBUri() string {
-	return e.dbUri
+	return e.dbURI
 }
 
-func (e *Environment) SetAccrualSystemUrl(url string) error {
+func (e *Environment) SetAccrualSystemURL(url string) error {
 	if url == "" {
 		return errors.New("fail set AccrualSystemUri: value is empty")
 	}
-	e.accrualSystemUri = url
+	e.accrualSystemURI = url
 	return nil
 }
 
-func (e *Environment) GetAccrualSystemUrl() string {
-	return e.accrualSystemUri
+func (e *Environment) GetAccrualSystemURL() string {
+	return e.accrualSystemURI
 }
 
 func (e *Environment) SetJWTSecret(secret string) error {
