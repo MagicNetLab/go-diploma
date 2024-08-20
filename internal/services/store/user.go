@@ -3,11 +3,11 @@ package store
 import (
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"time"
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 const (

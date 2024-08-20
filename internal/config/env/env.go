@@ -1,11 +1,11 @@
 package env
 
 import (
-	"go.uber.org/zap"
 	"os"
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 func Parse() (Options, error) {

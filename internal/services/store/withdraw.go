@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"go.uber.org/zap"
 	"strings"
 	"time"
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 const (

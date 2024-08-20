@@ -20,7 +20,7 @@ func main() {
 
 	cnf, err := config.GetAppConfig()
 	if err != nil {
-		logger.Fatal("fail loading config", zap.String("error", err.Error()))
+		logger.Fatal("fail loading config", zap.Error(err))
 		return
 	}
 
