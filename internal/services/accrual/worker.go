@@ -1,7 +1,6 @@
 package accrual
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -22,7 +21,7 @@ func RunWorker() {
 	pauseCh = make(chan string)
 	serviceHost = appConf.GetAccrualSystemURL()
 
-	httpc = resty.New().SetBaseURL(fmt.Sprintf("http://%s", serviceHost))
+	httpc = resty.New().SetBaseURL(serviceHost)
 
 	for i := 0; i < queueSize; i++ {
 		go worker()
