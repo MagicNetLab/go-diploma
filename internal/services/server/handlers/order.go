@@ -62,6 +62,13 @@ func CreateOrderHandler() http.HandlerFunc {
 				return
 			}
 
+			if errors.Is(err, order.ErrorIncorrectOrderNumber) {
+				logger.Error("create order error: invalid input. %v", zap.Error(err))
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

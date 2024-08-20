@@ -15,7 +15,7 @@ import (
 func CreateOrder(number int, userID int) error {
 	if !checkNumber(number) {
 		logger.Error("failed created order: invalid number")
-		return errors.New("invalid number")
+		return ErrorIncorrectOrderNumber
 	}
 
 	order, err := store.GetOrderByNumber(number)
