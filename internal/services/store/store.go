@@ -6,7 +6,6 @@ import (
 
 	"github.com/MagicNetLab/go-diploma/internal/config"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
-	"go.uber.org/zap"
 )
 
 var store Store
@@ -14,7 +13,8 @@ var store Store
 func Init(env config.AppEnvironment) error {
 	err := store.SetConnectString(env.GetDBUri())
 	if err != nil {
-		logger.Error("fail set db connect param", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("fail set db connect param", args)
 		return err
 	}
 
@@ -23,13 +23,15 @@ func Init(env config.AppEnvironment) error {
 
 	err = store.Ping(ctx)
 	if err != nil {
-		logger.Error("fail ping db connect param", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("fail ping db connect param", args)
 		return err
 	}
 
 	err = store.Migrate()
 	if err != nil {
-		logger.Error("fail migrate", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("fail migrate", args)
 		return err
 	}
 

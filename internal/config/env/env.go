@@ -5,7 +5,6 @@ import (
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 )
 
 func Parse() (Options, error) {
@@ -13,7 +12,8 @@ func Parse() (Options, error) {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		logger.Error("fail load .env file", zap.String("error", err.Error()))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("fail load .env file", args)
 	}
 
 	runAddressValue := os.Getenv(runAddressKey)

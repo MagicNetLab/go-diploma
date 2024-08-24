@@ -7,13 +7,13 @@ import (
 	"github.com/MagicNetLab/go-diploma/internal/config"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/go-resty/resty/v2"
-	"go.uber.org/zap"
 )
 
 func RunWorker() {
 	appConf, err := config.GetAppConfig()
 	if err != nil {
-		logger.Fatal("Error loading application config", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Fatal("Error loading application config", args)
 		return
 	}
 
@@ -32,16 +32,18 @@ func worker() {
 	for {
 		select {
 		case order := <-orderCh:
-			err := checkOrder(order)
+			err := processOrderAccrual(order)
 			if err != nil {
-				logger.Error("fail checking order ", zap.Error(err))
+				args := map[string]interface{}{"error": err.Error()}
+				logger.Error("fail checking order ", args)
 			}
 		case pause := <-pauseCh:
 			p, err := strconv.Atoi(pause)
 			if err == nil {
 				time.Sleep(time.Duration(p) * time.Second)
 			} else {
-				logger.Error("fail converting pause to int", zap.Error(err))
+				args := map[string]interface{}{"error": err.Error()}
+				logger.Error("fail converting pause to int", args)
 			}
 		default:
 			time.Sleep(100 * time.Millisecond)

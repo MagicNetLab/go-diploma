@@ -10,16 +10,25 @@ type Logger struct {
 	log *zap.Logger
 }
 
-func (l *Logger) Info(msg string, args ...zap.Field) {
-	l.log.Info(msg, args...)
+func (l *Logger) Info(msg string, args map[string]interface{}) {
+	l.log.Info(msg, l.prepareArgs(args)...)
 }
 
-func (l *Logger) Error(msg string, args ...zap.Field) {
-	l.log.Error(msg, args...)
+func (l *Logger) Error(msg string, args map[string]interface{}) {
+	l.log.Error(msg, l.prepareArgs(args)...)
 }
 
-func (l *Logger) Fatal(msg string, args ...zap.Field) {
-	l.log.Fatal(msg, args...)
+func (l *Logger) Fatal(msg string, args map[string]interface{}) {
+	l.log.Fatal(msg, l.prepareArgs(args)...)
+}
+
+func (l *Logger) prepareArgs(args map[string]interface{}) []zap.Field {
+	var r []zap.Field
+	for k, v := range args {
+		r = append(r, zap.Any(k, v))
+	}
+
+	return r
 }
 
 func (l *Logger) Sync() {

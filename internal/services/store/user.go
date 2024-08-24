@@ -7,7 +7,6 @@ import (
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/jackc/pgx/v5"
-	"go.uber.org/zap"
 )
 
 const (
@@ -22,7 +21,8 @@ func HasUserByLogin(login string) (bool, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return false, err
 	}
 	defer conn.Close(ctx)
@@ -30,7 +30,8 @@ func HasUserByLogin(login string) (bool, error) {
 	var count int
 	err = conn.QueryRow(ctx, hasUserByLoginSQL, login).Scan(&count)
 	if err != nil {
-		logger.Error("failed execute query", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed execute query", args)
 		return false, err
 	}
 
@@ -43,19 +44,21 @@ func CreateUser(login string, password string) error {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return err
 	}
 	defer conn.Close(ctx)
 
 	res, err := conn.Exec(ctx, insertUserSQL, login, password)
 	if err != nil {
-		logger.Error("failed execute query", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed execute query", args)
 		return err
 	}
 
 	if res.RowsAffected() == 0 {
-		logger.Error("failed execute create user query")
+		logger.Error("failed execute create user query", nil)
 		return errors.New("failed to insert user")
 	}
 
@@ -68,7 +71,8 @@ func GetUserByLogin(login string) (User, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return User{}, err
 	}
 	defer conn.Close(ctx)
@@ -76,7 +80,8 @@ func GetUserByLogin(login string) (User, error) {
 	var user User
 	err = conn.QueryRow(ctx, getUserByLoginSQL, login).Scan(&user.ID, &user.Login, &user.Password)
 	if err != nil {
-		logger.Error("failed execute query: %v", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed execute query: %v", args)
 		return User{}, err
 	}
 

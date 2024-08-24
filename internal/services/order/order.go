@@ -9,34 +9,35 @@ import (
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
 	"github.com/jackc/pgx/v5"
-	"go.uber.org/zap"
 )
 
 func CreateOrder(number int, userID int) error {
 	if !checkNumber(number) {
-		logger.Error("failed created order: invalid number")
+		logger.Error("failed created order: invalid number", nil)
 		return ErrorIncorrectOrderNumber
 	}
 
 	order, err := store.GetOrderByNumber(number)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		logger.Error("failed created order: failed to verify number", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed created order: failed to verify number", args)
 		return err
 	}
 
 	if order.UserID != 0 {
 		if order.UserID != userID {
-			logger.Error("failed created order: has already been added by the other user")
+			logger.Error("failed created order: has already been added by the other user", nil)
 			return ErrorOrderAlreadyAddedByOtherUser
 		}
 
-		logger.Error("failed created order: has already been added by the current user")
+		logger.Error("failed created order: has already been added by the current user", nil)
 		return ErrorOrderAlreadyAddedByUser
 	}
 
 	err = store.CreateOrder(number, userID)
 	if err != nil {
-		logger.Error("failed create order", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed create order", args)
 		return err
 	}
 
@@ -83,28 +84,26 @@ func GetBalanceByUserID(userID int) (UserBalance, error) {
 func CreateWithdraw(number string, amount float64, userID int) error {
 	orderNum, err := strconv.Atoi(number)
 	if err != nil {
-		logger.Error(
-			"failed create withdraw",
-			zap.Error(err),
-			zap.String("number", number),
-			zap.Int("user_id", userID))
-
+		args := map[string]interface{}{"error": err.Error(), "number": number, "user_id": userID}
+		logger.Error("failed create withdraw", args)
 		return err
 	}
 
 	if !checkNumber(orderNum) {
-		logger.Error("failed create withdraw: invalid number")
+		logger.Error("failed create withdraw: invalid number", nil)
 		return ErrorIncorrectWithdrawNumber
 	}
 
 	err = store.CreateWithdraw(orderNum, amount, userID)
 	if err != nil {
 		if errors.Is(err, store.ErrorWithdrawNotUnique) {
-			logger.Error("failed create withdraw", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("failed create withdraw", args)
 			return ErrorIncorrectWithdrawNumber
 		}
 
-		logger.Error("failed create withdraw", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed create withdraw", args)
 		return err
 	}
 

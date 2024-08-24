@@ -8,28 +8,28 @@ import (
 	"github.com/MagicNetLab/go-diploma/internal/config/env"
 	"github.com/MagicNetLab/go-diploma/internal/config/flags"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
-	"go.uber.org/zap"
 )
 
-var Env Environment
+var conf Environment
 
 func GetAppConfig() (AppEnvironment, error) {
-	if Env.isValid() {
-		return &Env, nil
+	if conf.isValid() {
+		return &conf, nil
 	}
 
 	getEnvValues()
 	getFlagsValues()
 
-	if Env.GetJWTSecret() == "" {
-		err := Env.SetJWTSecret(getRandomSecret())
+	if conf.GetJWTSecret() == "" {
+		err := conf.SetJWTSecret(getRandomSecret())
 		if err != nil {
-			logger.Error("Failed to set JWT secret", zap.String("error", err.Error()))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("Failed to set JWT secret", args)
 		}
 	}
 
-	if Env.isValid() {
-		return &Env, nil
+	if conf.isValid() {
+		return &conf, nil
 	}
 
 	return &Environment{}, errors.New("invalid config")
@@ -38,35 +38,40 @@ func GetAppConfig() (AppEnvironment, error) {
 func getEnvValues() {
 	envValues, err := env.Parse()
 	if err != nil {
-		logger.Error("fail parse env params", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("fail parse env params", args)
 		return
 	}
 
 	if envValues.HasRunAddress() {
-		err = Env.SetRunAddress(envValues.GetRunAddress())
+		err = conf.SetRunAddress(envValues.GetRunAddress())
 		if err != nil {
-			logger.Error("fail set RunAddress from env params", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set RunAddress from env params", args)
 		}
 	}
 
 	if envValues.HasDBUri() {
-		err = Env.SetDBUri(envValues.GetDBUri())
+		err = conf.SetDBUri(envValues.GetDBUri())
 		if err != nil {
-			logger.Error("fail set DBUri from env params", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set DBUri from env params", args)
 		}
 	}
 
 	if envValues.HasAccrualSystemURL() {
-		err = Env.SetAccrualSystemURL(envValues.GetAccrualSystemURL())
+		err = conf.SetAccrualSystemURL(envValues.GetAccrualSystemURL())
 		if err != nil {
-			logger.Error("fail set AccrualSystemUrl from env params", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set AccrualSystemUrl from env params", args)
 		}
 	}
 
 	if envValues.HasJWTSecret() {
-		err = Env.SetJWTSecret(envValues.GetJWTSecret())
+		err = conf.SetJWTSecret(envValues.GetJWTSecret())
 		if err != nil {
-			logger.Error("fail set JWTSecret from env params: %v", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set JWTSecret from env params: %v", args)
 		}
 	}
 }
@@ -74,34 +79,39 @@ func getEnvValues() {
 func getFlagsValues() {
 	flagValues, err := flags.Parse()
 	if err != nil {
-		logger.Error("fail parse flag params", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("fail parse flag params", args)
 	}
 
 	if flagValues.HasRunAddress() {
-		err = Env.SetRunAddress(flagValues.GetRunAddress())
+		err = conf.SetRunAddress(flagValues.GetRunAddress())
 		if err != nil {
-			logger.Error("fail set RunAddress from flag params: %v", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set RunAddress from flag params: %v", args)
 		}
 	}
 
 	if flagValues.HasDBUri() {
-		err = Env.SetDBUri(flagValues.GetDBUri())
+		err = conf.SetDBUri(flagValues.GetDBUri())
 		if err != nil {
-			logger.Error("fail set DBUri from flag params", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set DBUri from flag params", args)
 		}
 	}
 
 	if flagValues.HasAccrualSystemURL() {
-		err = Env.SetAccrualSystemURL(flagValues.GetAccrualSystemURL())
+		err = conf.SetAccrualSystemURL(flagValues.GetAccrualSystemURL())
 		if err != nil {
-			logger.Error("fail set AccrualSystemUrl from flag params", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set AccrualSystemUrl from flag params", args)
 		}
 	}
 
 	if flagValues.HasJWTSecret() {
-		err = Env.SetJWTSecret(flagValues.GetJWTSecret())
+		err = conf.SetJWTSecret(flagValues.GetJWTSecret())
 		if err != nil {
-			logger.Error("fail set JWTSecret from flag params", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail set JWTSecret from flag params", args)
 		}
 	}
 }

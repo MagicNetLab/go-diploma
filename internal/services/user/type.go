@@ -1,6 +1,9 @@
 package user
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 type User struct {
 	ID       string `json:"id"`
@@ -9,3 +12,5 @@ type User struct {
 }
 
 var ErrorUserExists = errors.New("user already exists")
+
+const tokenLifetime = 60 * time.Minute

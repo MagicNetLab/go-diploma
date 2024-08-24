@@ -8,7 +8,6 @@ import (
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/jackc/pgx/v5"
-	"go.uber.org/zap"
 )
 
 const (
@@ -31,7 +30,8 @@ func GetOrderByNumber(number int) (Order, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return order, err
 	}
 	defer conn.Close(ctx)
@@ -39,7 +39,8 @@ func GetOrderByNumber(number int) (Order, error) {
 	row := conn.QueryRow(ctx, getOrderByNumberSQL, number)
 	err = row.Scan(&order.ID, &order.Number, &order.UserID, &order.Status, &order.Accrual, &order.UploadedAt)
 	if err != nil {
-		logger.Error("failed to query order", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to query order", args)
 		return order, err
 	}
 
@@ -52,19 +53,21 @@ func CreateOrder(number int, userID int) error {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return err
 	}
 	defer conn.Close(ctx)
 
 	res, err := conn.Exec(ctx, insertOrderSQL, number, userID, OrderStatusNew)
 	if err != nil {
-		logger.Error("failed to insert order", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to insert order", args)
 		return err
 	}
 
 	if res.RowsAffected() == 0 {
-		logger.Error("failed to insert order")
+		logger.Error("failed to insert order", nil)
 		return errors.New("failed to insert order")
 	}
 
@@ -77,7 +80,8 @@ func GetOrdersByUserID(userID int) ([]Order, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return nil, err
 	}
 	defer conn.Close(ctx)
@@ -88,7 +92,8 @@ func GetOrdersByUserID(userID int) ([]Order, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return orders, nil
 		}
-		logger.Error("failed to query orders", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to query orders", args)
 		return nil, err
 	}
 	defer rows.Close()
@@ -97,7 +102,8 @@ func GetOrdersByUserID(userID int) ([]Order, error) {
 		var order Order
 		err = rows.Scan(&order.ID, &order.UserID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
 		if err != nil {
-			logger.Error("failed to scan query order", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("failed to scan query order", args)
 			rows.Close()
 			return nil, err
 		}
@@ -114,7 +120,8 @@ func GetAccrualAmountByUserID(userID int) (float64, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return 0, err
 	}
 	defer conn.Close(ctx)
@@ -122,12 +129,13 @@ func GetAccrualAmountByUserID(userID int) (float64, error) {
 	var amount sql.NullFloat64
 	err = conn.QueryRow(ctx, accrualAmountByUserIDSQL, userID, OrderStatusProcessed).Scan(&amount)
 	if err != nil {
-		logger.Error("failed to query accrual amount", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to query accrual amount", args)
 		return 0, err
 	}
 
 	if !amount.Valid {
-		logger.Error("failed to query accrual amount: result is not valid")
+		logger.Error("failed to query accrual amount: result is not valid", nil)
 		return 0, nil
 	}
 
@@ -139,19 +147,21 @@ func UpdateOrder(order Order) error {
 	defer cancel()
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("failed to connect to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to connect to database", args)
 		return err
 	}
 	defer conn.Close(ctx)
 
 	res, err := conn.Exec(ctx, updateOrderSQL, order.Status, order.Accrual, order.ID)
 	if err != nil {
-		logger.Error("failed to update order", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed to update order", args)
 		return err
 	}
 
 	if res.RowsAffected() == 0 {
-		logger.Error("failed to update order")
+		logger.Error("failed to update order", nil)
 		return errors.New("failed to update order")
 	}
 

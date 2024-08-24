@@ -9,7 +9,6 @@ import (
 
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/user"
-	"go.uber.org/zap"
 )
 
 func UserRegisterHandler() http.HandlerFunc {
@@ -21,13 +20,14 @@ func UserRegisterHandler() http.HandlerFunc {
 
 		var regRequest RegisterUserRequest
 		if err := json.NewDecoder(r.Body).Decode(&regRequest); err != nil {
-			logger.Error("error decoding register request body", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error decoding register request body", args)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if !regRequest.IsValid() {
-			logger.Error("failed register user: one or more request params is empty")
+			logger.Error("failed register user: one or more request params is empty", nil)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -35,19 +35,21 @@ func UserRegisterHandler() http.HandlerFunc {
 		err := user.Register(regRequest.Login, regRequest.Password)
 		if err != nil {
 			if errors.Is(err, user.ErrorUserExists) {
-				logger.Error(fmt.Sprintf("failed register user: login %s is exists", regRequest.Login))
+				logger.Error(fmt.Sprintf("failed register user: login %s is exists", regRequest.Login), nil)
 				http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 				return
 			}
 
-			logger.Error("fail register user", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail register user", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		token, err := user.Login(regRequest.Login, regRequest.Password)
 		if err != nil {
-			logger.Error("fail user login", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail user login", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -59,7 +61,8 @@ func UserRegisterHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte("OK"))
 		if err != nil {
-			logger.Error("Failed to write register user response response", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("Failed to write register user response response", args)
 		}
 	}
 }
@@ -73,20 +76,22 @@ func UserLoginHandler() http.HandlerFunc {
 
 		var loginRequest UserLoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
-			logger.Error("error decoding login request body", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error decoding login request body", args)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if !loginRequest.IsValid() {
-			logger.Error("failed login user: one or more request params is empty")
+			logger.Error("failed login user: one or more request params is empty", nil)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		token, err := user.Login(loginRequest.Login, loginRequest.Password)
 		if err != nil {
-			logger.Error("fail user login", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("fail user login", args)
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
@@ -98,7 +103,8 @@ func UserLoginHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte("OK"))
 		if err != nil {
-			logger.Error("Failed to write response", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("Failed to write response", args)
 		}
 
 	}

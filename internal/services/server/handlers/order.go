@@ -10,7 +10,6 @@ import (
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/order"
 	"github.com/MagicNetLab/go-diploma/internal/services/user"
-	"go.uber.org/zap"
 )
 
 func CreateOrderHandler() http.HandlerFunc {
@@ -22,27 +21,31 @@ func CreateOrderHandler() http.HandlerFunc {
 
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
-			logger.Error("error getting auth user id from cookie", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting auth user id from cookie", args)
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
 
 		num, err := io.ReadAll(r.Body)
 		if err != nil {
-			logger.Error("create order error: failed reading body", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("create order error: failed reading body", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		if string(num) == "" {
-			logger.Error("create order error: empty input. %v", zap.Error(err))
+			args := map[string]interface{}{"error": "body is empty"}
+			logger.Error("create order error: empty input. %v", args)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		number, err := strconv.Atoi(string(num))
 		if err != nil {
-			logger.Error("create order error: invalid input", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("create order error: invalid input", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -50,20 +53,21 @@ func CreateOrderHandler() http.HandlerFunc {
 		err = order.CreateOrder(number, userID)
 		if err != nil {
 			if errors.Is(err, order.ErrorOrderAlreadyAddedByOtherUser) {
-				logger.Error("create order error: order already added by other user")
+				logger.Error("create order error: order already added by other user", nil)
 				http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 				return
 			}
 
 			if errors.Is(err, order.ErrorOrderAlreadyAddedByUser) {
-				logger.Error("create order error: order already added by current user")
+				logger.Error("create order error: order already added by current user", nil)
 				w.WriteHeader(http.StatusOK)
 				w.Write([]byte("OK"))
 				return
 			}
 
 			if errors.Is(err, order.ErrorIncorrectOrderNumber) {
-				logger.Error("create order error: invalid input.", zap.Error(err))
+				args := map[string]interface{}{"error": err.Error()}
+				logger.Error("create order error: invalid input.", args)
 				w.WriteHeader(http.StatusUnprocessableEntity)
 				w.Write([]byte(err.Error()))
 				return
@@ -73,7 +77,8 @@ func CreateOrderHandler() http.HandlerFunc {
 			return
 		}
 
-		logger.Info("create order success", zap.Int("userID", userID), zap.String("number", string(num)))
+		args := map[string]interface{}{"userID": userID, "number": string(num)}
+		logger.Info("create order success", args)
 		w.WriteHeader(http.StatusAccepted)
 		w.Write([]byte("Accepted"))
 	}
@@ -88,7 +93,8 @@ func OrderListHandler() http.HandlerFunc {
 
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
-			logger.Error("error getting auth user id from cookie", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting auth user id from cookie", args)
 			w.Header().Set("content-type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte(http.StatusText(http.StatusUnauthorized)))
@@ -98,7 +104,8 @@ func OrderListHandler() http.HandlerFunc {
 
 		userOrders, err := order.GetUserOrders(userID)
 		if err != nil {
-			logger.Error("error getting user orders", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting user orders", args)
 			w.Header().Set("content-type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
@@ -126,7 +133,8 @@ func OrderListHandler() http.HandlerFunc {
 		}
 
 		if err != nil {
-			logger.Error("error send user orders response", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error send user orders response", args)
 			w.Header().Set("content-type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
@@ -143,14 +151,16 @@ func BalanceHandler() http.HandlerFunc {
 
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
-			logger.Error("error getting auth user id from cookie", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting auth user id from cookie", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		result, err := order.GetBalanceByUserID(userID)
 		if err != nil {
-			logger.Error("error getting balance of user", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting balance of user", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -163,7 +173,8 @@ func BalanceHandler() http.HandlerFunc {
 		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(response); err != nil {
-			logger.Error("error send balance response", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error send balance response", args)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -178,36 +189,38 @@ func WithdrawRequestHandler() http.HandlerFunc {
 
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
-			logger.Error("error getting auth user id from cookie", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting auth user id from cookie", args)
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
 
 		var withdrawRequest WithDrawRequest
 		if err := json.NewDecoder(r.Body).Decode(&withdrawRequest); err != nil {
-			logger.Error("failed to decode withdraw request", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("failed to decode withdraw request", args)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if !withdrawRequest.IsValid() {
-			logger.Error(
-				"Withdraw request: invalid request params",
-				zap.String("order", withdrawRequest.Order),
-				zap.Float64("sum", withdrawRequest.Sum))
+			args := map[string]interface{}{"order": withdrawRequest.Order, "sum": withdrawRequest.Sum}
+			logger.Error("Withdraw request: invalid request params", args)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		balance, err := order.GetBalanceByUserID(userID)
 		if err != nil {
-			logger.Error("error getting balance of user", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting balance of user", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		if balance.Current < withdrawRequest.Sum {
-			logger.Error("Withdraw request error: insufficient balance.", zap.Int("user", userID))
+			args := map[string]interface{}{"user": userID}
+			logger.Error("Withdraw request error: insufficient balance.", args)
 			http.Error(w, http.StatusText(http.StatusPaymentRequired), http.StatusPaymentRequired)
 			return
 		}
@@ -215,20 +228,20 @@ func WithdrawRequestHandler() http.HandlerFunc {
 		err = order.CreateWithdraw(withdrawRequest.Order, withdrawRequest.Sum, userID)
 		if err != nil {
 			if errors.Is(err, order.ErrorIncorrectWithdrawNumber) {
-				logger.Error("Withdraw request error", zap.Error(err))
+				args := map[string]interface{}{"error": "incorrect Withdraw number"}
+				logger.Error("Withdraw request error", args)
 				http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
 				return
 			}
 
-			logger.Error("error creating withdraw", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error creating withdraw", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
-		logger.Info(
-			"withdraw request success: num %s, user %v",
-			zap.String("order", withdrawRequest.Order),
-			zap.Int("userID", userID))
+		args := map[string]interface{}{"userID": userID, "order": withdrawRequest.Order}
+		logger.Info("withdraw request success: num %s, user %v", args)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
@@ -244,7 +257,8 @@ func WithdrawListHandler() http.HandlerFunc {
 
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
-			logger.Error("error getting auth user id from cookie", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error getting auth user id from cookie", args)
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
@@ -268,7 +282,8 @@ func WithdrawListHandler() http.HandlerFunc {
 		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(response); err != nil {
-			logger.Error("error send withdraws response", zap.Error(err))
+			args := map[string]interface{}{"error": err.Error()}
+			logger.Error("error send withdraws response", args)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

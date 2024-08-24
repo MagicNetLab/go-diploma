@@ -10,7 +10,6 @@ import (
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-	"go.uber.org/zap"
 )
 
 const (
@@ -25,7 +24,8 @@ func GetWithdrawAmountByUserID(userID int) (float64, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("error connecting to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("error connecting to database", args)
 		return 0, err
 	}
 	defer conn.Close(ctx)
@@ -33,12 +33,14 @@ func GetWithdrawAmountByUserID(userID int) (float64, error) {
 	var amount sql.NullFloat64
 	err = conn.QueryRow(ctx, withdrawAmountByUserIDSQL, userID).Scan(&amount)
 	if err != nil {
-		logger.Error("error execute query getting withdraw amount", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("error execute query getting withdraw amount", args)
 		return 0, err
 	}
 
 	if !amount.Valid {
-		logger.Error("error execute query getting withdraw amount", zap.Error(err))
+		args := map[string]interface{}{"error": "amount not found"}
+		logger.Error("error execute query getting withdraw amount", args)
 		return 0, nil
 	}
 
@@ -51,7 +53,8 @@ func CreateWithdraw(order int, amount float64, userID int) error {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("error connecting to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("error connecting to database", args)
 		return err
 	}
 	defer conn.Close(ctx)
@@ -59,16 +62,19 @@ func CreateWithdraw(order int, amount float64, userID int) error {
 	result, err := conn.Exec(ctx, createWithdrawSQL, order, amount, userID)
 	if err != nil {
 		if strings.Contains(err.Error(), pgerrcode.UniqueViolation) {
-			logger.Error("error creating withdraw: number already exists", zap.Int("number", order))
+			args := map[string]interface{}{"number": order}
+			logger.Error("error creating withdraw: number already exists", args)
 			return ErrorWithdrawNotUnique
 		}
 
-		logger.Error("failed insert new withdraw", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("failed insert new withdraw", args)
 		return err
 	}
 
 	if result.RowsAffected() == 0 {
-		logger.Error("error creating withdraw", zap.Int("number", order))
+		args := map[string]interface{}{"number": order}
+		logger.Error("error creating withdraw", args)
 		return errors.New("failed to insert withdraw")
 	}
 
@@ -83,14 +89,16 @@ func GetWithdrawListByUserID(userID int) (WithdrawList, error) {
 
 	conn, err := pgx.Connect(ctx, store.connectString)
 	if err != nil {
-		logger.Error("error connecting to database", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("error connecting to database", args)
 		return list, err
 	}
 	defer conn.Close(ctx)
 
 	rows, err := conn.Query(ctx, withdrawListByUserIDSQL, userID)
 	if err != nil {
-		logger.Error("error execute query getting withdraw list", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Error("error execute query getting withdraw list", args)
 		return list, err
 	}
 	defer rows.Close()

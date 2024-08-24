@@ -71,7 +71,7 @@ func (s *Store) Migrate() error {
 		driver,
 	)
 	if err != nil {
-		logger.Error(fmt.Sprintf("fail init db migrate: %v", err))
+		logger.Error(fmt.Sprintf("fail init db migrate: %v", err), nil)
 		return err
 	}
 

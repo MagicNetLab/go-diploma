@@ -2,31 +2,49 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/MagicNetLab/go-diploma/internal/config"
 	"github.com/MagicNetLab/go-diploma/internal/services/accrual"
 	"github.com/MagicNetLab/go-diploma/internal/services/logger"
 	"github.com/MagicNetLab/go-diploma/internal/services/server"
 	"github.com/MagicNetLab/go-diploma/internal/services/store"
-	"go.uber.org/zap"
 )
 
 func main() {
+	initApp()
+	runServer()
+	waitStop()
+}
+
+func initApp() {
 	err := logger.Initialize()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer logger.Sync()
 
 	cnf, err := config.GetAppConfig()
 	if err != nil {
-		logger.Fatal("fail loading config", zap.Error(err))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Fatal("fail loading config", args)
 		return
 	}
 
 	err = store.Init(cnf)
 	if err != nil {
-		logger.Fatal("failed initializing store", zap.String("error", err.Error()))
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Fatal("failed initializing store", args)
+		return
+	}
+}
+
+func runServer() {
+	cnf, err := config.GetAppConfig()
+	if err != nil {
+		args := map[string]interface{}{"error": err.Error()}
+		logger.Fatal("fail loading config", args)
 		return
 	}
 
@@ -34,9 +52,14 @@ func main() {
 	accrual.RunWorker()
 
 	// run server
-	go func() {
-		server.Run(cnf)
-	}()
+	go func() { server.Run(cnf) }()
+}
 
-	select {}
+func waitStop() {
+	shutdownCh := make(chan os.Signal, 1)
+	signal.Notify(shutdownCh, syscall.SIGINT, syscall.SIGTERM)
+	<-shutdownCh
+
+	logger.Info("Shutting down...", nil)
+	logger.Sync()
 }

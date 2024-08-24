@@ -10,6 +10,7 @@ import (
 var log = Logger{log: zap.NewNop()}
 
 func Initialize() error {
+	// todo Создай фабрику логгеров для поддержки разных реализаций (например, для тестов)
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "timestamp",
 		LevelKey:       "level",
@@ -36,16 +37,16 @@ func Initialize() error {
 	return nil
 }
 
-func Info(msg string, args ...zap.Field) {
-	log.Info(msg, args...)
+func Info(msg string, args map[string]interface{}) {
+	log.Info(msg, args)
 }
 
-func Error(msg string, args ...zap.Field) {
-	log.Error(msg, args...)
+func Error(msg string, args map[string]interface{}) {
+	log.Error(msg, args)
 }
 
-func Fatal(msg string, args ...zap.Field) {
-	log.Fatal(msg, args...)
+func Fatal(msg string, args map[string]interface{}) {
+	log.Fatal(msg, args)
 }
 
 func Sync() {
