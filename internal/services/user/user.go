@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -21,7 +22,7 @@ func Register(login string, password string) error {
 	isLoginExists, err := store.HasUserByLogin(login)
 	if err != nil {
 		args := map[string]interface{}{"error": err.Error()}
-		logger.Error("failed check register user login", args)
+		logger.Error("failed check new user login", args)
 		return err
 	}
 
@@ -138,7 +139,7 @@ func GetAuthUserID(r *http.Request) (int, error) {
 	}
 
 	if !token.Valid || claims.UserID == 0 {
-		return 0, err
+		return 0, errors.New("invalid token or userID param")
 	}
 
 	return claims.UserID, nil

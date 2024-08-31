@@ -14,6 +14,7 @@ type AppEnvironment interface {
 	GetJWTSecret() string
 }
 
+// todo переименовать перменные и методы
 type Environment struct {
 	runAddress       string
 	dbURI            string

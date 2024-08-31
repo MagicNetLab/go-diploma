@@ -1,9 +1,7 @@
 package logger
 
 import (
-	"fmt"
 	"net/http"
-	"time"
 
 	"go.uber.org/zap"
 )
@@ -27,16 +25,7 @@ func (l *Logger) Fatal(msg string, args map[string]interface{}) {
 func (l *Logger) prepareArgs(args map[string]interface{}) []zap.Field {
 	var r []zap.Field
 	for k, v := range args {
-		switch t := v.(type) {
-		case string:
-			r = append(r, zap.String(k, t))
-		case int:
-			r = append(r, zap.Int(k, t))
-		case time.Duration:
-			r = append(r, zap.Duration(k, t))
-		default:
-			fmt.Printf("undefuned logger params type %s", t)
-		}
+		r = append(r, zap.Any(k, v))
 	}
 
 	return r

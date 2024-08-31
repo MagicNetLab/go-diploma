@@ -13,11 +13,6 @@ import (
 
 func UserRegisterHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
 		var regRequest RegisterUserRequest
 		if err := json.NewDecoder(r.Body).Decode(&regRequest); err != nil {
 			args := map[string]interface{}{"error": err.Error()}
@@ -48,7 +43,7 @@ func UserRegisterHandler() http.HandlerFunc {
 
 		token, err := user.Login(regRequest.Login, regRequest.Password)
 		if err != nil {
-			args := map[string]interface{}{"error": err.Error()}
+			args := map[string]interface{}{"error": err.Error(), "login": regRequest.Login}
 			logger.Error("fail user login", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -69,11 +64,6 @@ func UserRegisterHandler() http.HandlerFunc {
 
 func UserLoginHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
 		var loginRequest UserLoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
 			args := map[string]interface{}{"error": err.Error()}
@@ -90,7 +80,7 @@ func UserLoginHandler() http.HandlerFunc {
 
 		token, err := user.Login(loginRequest.Login, loginRequest.Password)
 		if err != nil {
-			args := map[string]interface{}{"error": err.Error()}
+			args := map[string]interface{}{"error": err.Error(), "login": loginRequest.Login}
 			logger.Error("fail user login", args)
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
@@ -106,6 +96,5 @@ func UserLoginHandler() http.HandlerFunc {
 			args := map[string]interface{}{"error": err.Error()}
 			logger.Error("Failed to write response", args)
 		}
-
 	}
 }

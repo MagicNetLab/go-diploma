@@ -32,7 +32,7 @@ func GetAppConfig() (AppEnvironment, error) {
 		return &conf, nil
 	}
 
-	return &Environment{}, errors.New("invalid config")
+	return nil, errors.New("invalid config")
 }
 
 func getEnvValues() {

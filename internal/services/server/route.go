@@ -7,13 +7,13 @@ import (
 
 func getRoute() *chi.Mux {
 	r := chi.NewRouter()
-	r.Post("/api/user/register", mwGuest(handlers.UserRegisterHandler()))
-	r.Post("/api/user/login", mwGuest(handlers.UserLoginHandler()))
-	r.Post("/api/user/orders", mwAuthorized(handlers.CreateOrderHandler()))
-	r.Get("/api/user/orders", mwAuthorized(handlers.OrderListHandler()))
-	r.Get("/api/user/balance", mwAuthorized(handlers.BalanceHandler()))
-	r.Post("/api/user/balance/withdraw", mwAuthorized(handlers.WithdrawRequestHandler()))
-	r.Get("/api/user/withdrawals", mwAuthorized(handlers.WithdrawListHandler()))
+	r.Post("/api/user/register", mw(handlers.UserRegisterHandler(), mwGuestPost))
+	r.Post("/api/user/login", mw(handlers.UserLoginHandler(), mwGuestPost))
+	r.Post("/api/user/orders", mw(handlers.CreateOrderHandler(), mwAuthorizedPost))
+	r.Get("/api/user/orders", mw(handlers.OrderListHandler(), mwAuthorizedGet))
+	r.Get("/api/user/balance", mw(handlers.BalanceHandler(), mwAuthorizedGet))
+	r.Post("/api/user/balance/withdraw", mw(handlers.WithdrawRequestHandler(), mwAuthorizedPost))
+	r.Get("/api/user/withdrawals", mw(handlers.WithdrawListHandler(), mwAuthorizedGet))
 
 	return r
 }

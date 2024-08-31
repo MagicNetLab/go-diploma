@@ -53,12 +53,13 @@ func CreateUser(login string, password string) error {
 	res, err := conn.Exec(ctx, insertUserSQL, login, password)
 	if err != nil {
 		args := map[string]interface{}{"error": err.Error()}
-		logger.Error("failed execute query", args)
+		logger.Error("failed execute query 'insertUserSQL'", args)
 		return err
 	}
 
 	if res.RowsAffected() == 0 {
-		logger.Error("failed execute create user query", nil)
+		args := map[string]interface{}{"login": login, "password": password}
+		logger.Error("failed execute query 'insertUserSQL'", args)
 		return errors.New("failed to insert user")
 	}
 
@@ -80,8 +81,8 @@ func GetUserByLogin(login string) (User, error) {
 	var user User
 	err = conn.QueryRow(ctx, getUserByLoginSQL, login).Scan(&user.ID, &user.Login, &user.Password)
 	if err != nil {
-		args := map[string]interface{}{"error": err.Error()}
-		logger.Error("failed execute query: %v", args)
+		args := map[string]interface{}{"error": err.Error(), "login": login}
+		logger.Error("failed execute query 'getUserByLoginSQL'", args)
 		return User{}, err
 	}
 

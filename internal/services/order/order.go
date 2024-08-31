@@ -97,12 +97,12 @@ func CreateWithdraw(number string, amount float64, userID int) error {
 	err = store.CreateWithdraw(orderNum, amount, userID)
 	if err != nil {
 		if errors.Is(err, store.ErrorWithdrawNotUnique) {
-			args := map[string]interface{}{"error": err.Error()}
+			args := map[string]interface{}{"error": err.Error(), "number": number, "user_id": userID, "amount": amount}
 			logger.Error("failed create withdraw", args)
 			return ErrorIncorrectWithdrawNumber
 		}
 
-		args := map[string]interface{}{"error": err.Error()}
+		args := map[string]interface{}{"error": err.Error(), "number": number, "user_id": userID, "amount": amount}
 		logger.Error("failed create withdraw", args)
 		return err
 	}

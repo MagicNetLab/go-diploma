@@ -14,11 +14,6 @@ import (
 
 func CreateOrderHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
 			args := map[string]interface{}{"error": err.Error()}
@@ -86,11 +81,6 @@ func CreateOrderHandler() http.HandlerFunc {
 
 func OrderListHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
 			args := map[string]interface{}{"error": err.Error()}
@@ -104,7 +94,7 @@ func OrderListHandler() http.HandlerFunc {
 
 		userOrders, err := order.GetUserOrders(userID)
 		if err != nil {
-			args := map[string]interface{}{"error": err.Error()}
+			args := map[string]interface{}{"error": err.Error(), "userID": userID}
 			logger.Error("error getting user orders", args)
 			w.Header().Set("content-type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -144,11 +134,6 @@ func OrderListHandler() http.HandlerFunc {
 
 func BalanceHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
 			args := map[string]interface{}{"error": err.Error()}
@@ -159,7 +144,7 @@ func BalanceHandler() http.HandlerFunc {
 
 		result, err := order.GetBalanceByUserID(userID)
 		if err != nil {
-			args := map[string]interface{}{"error": err.Error()}
+			args := map[string]interface{}{"error": err.Error(), "userID": userID}
 			logger.Error("error getting balance of user", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -182,11 +167,6 @@ func BalanceHandler() http.HandlerFunc {
 
 func WithdrawRequestHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
 			args := map[string]interface{}{"error": err.Error()}
@@ -212,14 +192,14 @@ func WithdrawRequestHandler() http.HandlerFunc {
 
 		balance, err := order.GetBalanceByUserID(userID)
 		if err != nil {
-			args := map[string]interface{}{"error": err.Error()}
+			args := map[string]interface{}{"error": err.Error(), "userID": userID}
 			logger.Error("error getting balance of user", args)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		if balance.Current < withdrawRequest.Sum {
-			args := map[string]interface{}{"user": userID}
+			args := map[string]interface{}{"user": userID, "balance": balance.Current, "sum": withdrawRequest.Sum}
 			logger.Error("Withdraw request error: insufficient balance.", args)
 			http.Error(w, http.StatusText(http.StatusPaymentRequired), http.StatusPaymentRequired)
 			return
@@ -250,11 +230,6 @@ func WithdrawRequestHandler() http.HandlerFunc {
 
 func WithdrawListHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
 		userID, err := user.GetAuthUserID(r)
 		if err != nil {
 			args := map[string]interface{}{"error": err.Error()}
